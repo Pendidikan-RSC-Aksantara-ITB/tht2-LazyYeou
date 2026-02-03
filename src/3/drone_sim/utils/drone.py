@@ -15,11 +15,20 @@ class Drone:
         self.velocity = [v * DRONE_MAX_SPEED for v in self.velocity]
         self.color = BLUE
         self.radius = 2
+        self.max_speed = DRONE_MAX_SPEED
         
         self.check_radius_cell = math.ceil(OBSTACLE_DISTANCE_THRESHOLD / CELL_SIZE) + 1
         
+    def limit_vector(self, vector, limit):
+        magnitude = vector[0] ** 2 + vector[1] ** 2
+        if magnitude > limit:
+            f = limit / magnitude
+            return [vector[0] * f, vector[1] * f]
+        return vector
+    
     def to_target(self, ):
         to_target = target
+    
 
     def avoid_obstacle(self, game_map):
         steer = [0.0, 0.0]
@@ -67,6 +76,25 @@ class Drone:
             steer = [v - self.velocity[i] for i, v in enumerate(steer)] #
             steer = self._limit_vector(steer, self.max_force)
         return steer
+    
+    def cohesion(self, drones):
+        pos_sum = [0.0, 0.0]
+        count 0
+
+        for drone in drones:
+            if drone != self:
+                pos_sum[0] += drone.position[0]
+                pos_sum[1] += drone.position[1]
+                count += 1
+
+        if count > 0:
+            avg_pos = [pos_sum[0] / count, pos_sum[1] / count]
+            velocities = [avg_pos[0] - self.position[0], avg_pos[1] - self.position[1]]
+
+            velocities = norm_vector(velocities)
+            velocities = [v * self.max_speed for v in velocities]
+            steer = [velocities[0] - self.velocity[0], velocities[1] - self.velocity[1]]
+            steer = se
         
 
 
