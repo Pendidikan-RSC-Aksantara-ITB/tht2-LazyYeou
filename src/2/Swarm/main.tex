@@ -1,0 +1,63 @@
+\documentclass[indonesian]{article}
+
+\usepackage[provide=*]{babel}
+\usepackage[letterpaper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\usepackage{biblatex}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{P{ath Planning and Swarm Control}}
+\author{Muhammad Ridwan Nasir Firdaus}
+
+\begin{document}
+\maketitle
+
+\section{Artifiical Potential Field}
+
+\textit{Artificial Potential Field} (APF) adalah salah satu metode \textit{path planning} yang membuat robot/drone bergerak ke arah penurunan tercepat (gradien negatif) dari total medan potensial.
+\begin{figure}[htp]
+    \centering
+    \includegraphics[width=8cm]{APF_vis.png}
+    \caption{Visualiasi Medan Gaya APF}
+    \label{fig:apf}
+\end{figure} 
+Metode ini seolah-olah membuat robot/drone bergerak di suatu lingkungan dengan berbagai medan gaya, \textit{obstacle} akan memberi \textit{repulsive force}(gaya dorong) kepada robot dan \textit{goal} akan memberi \textit{attractive force}(gaya tarik) kepada robot. Total dari kedua gaya tersebut akan mengatur bagaimana pergerakan robot. Misal posisi untuk robot adalah $P_r = (x, y)$ dan posisi untuk \textit{goal} adalah $P_g = (x, y)$ dan $W_a$ adalah \textit{Weighting gain}, maka fungsi \textit{attractive potential}-nya didefinisikan sebagai:
+
+\[U_a  = W_a * (P_g - P_r)^2\]
+
+Jadi semakin jauh jarak antara robot dengan \textit{goal} maka gaya tariknya akan semakin besar juga. Lalu fungsi \textit{repulsive potential} didefinisikan sebagai berikut:
+
+\[U_{rep} =
+\begin{cases}
+\frac{1}{2}\eta
+\left(
+\frac{1}{\rho} - \frac{1}{\rho_0}
+\right)^2, & \rho(q) \le \rho_0 \\
+0, & \rho(q) > \rho_0
+\end{cases}
+\]
+
+dimana $\eta$ adalah konstanta bernilai positif, $\rho$ adalah jarak terdekat robot dengan satu \textit{obstacle}, dan $p_0$ adalah jarak terjauh dari satu \textit{obstacle}.  
+
+\section{UCS vs GBFS vs A*}
+
+\subsection{UCS}
+\textit{Uniform Cost Search} meruapkan salah satu algortima penentuan rute tanpa ada informais tambahan mengenai tujuan pencarian. Pencarian dilakukan berdasarkan \textit{cost} atau ongkos untuk sampai ke suatu simpul pada graf dan pada algoritma ini simpul dengan \textit{cost} paling rendah akan di-prioritaskan. Kelebihannya adalah algortima ini pasti mendapat path terpendek dan pasti akan mencapai tujuan (jika ada) dan kekurangannya yaitu berjalan lambat pada graf kompleks dan boros memori.
+
+\subsection{Greedy Best First Search}
+GBFS merupakan salah satu algoritma penentuan rute dengan adanya informasi tambahan mengenai tujuan pencarian. Pencarian dilakukan berdasarkan nilai heuristik suatu simpul pada graf. Nilai heuristik adlaah estimasi \textit{cost} dari suatu simpul ke simpul tujuannya. Rute dengan nilai heuristik paling rendah akan dipilih. Kelebihannya yaitu cepat dan cocok untuk \textit{realtime} dan kekurangannya yaitu tidak optimal, bisa \textit{stuck} jika terjadi \textit{local minimum} dan bisa gagal jika nilai heuristik buruk.
+
+\subsection{A*}
+A* merupakan salah satu algoritma penentuan rute dengan adanya informasi tambahan mengenai tujuan pencarian. Konsepnya yaitu menghindari \textit{path} yang sudah mahal selain menggunakan nilai heuristik. Pencarian dilakukan berdasarkan fungsi evaluasi suatu simpul, fungsi evaluasi merupakan penjumlahan antara \textit{cost} untuk sampai ke suatu simpul dengan nilai heuristik untuk sampai ke tujuan. Salah kelebihannya yaitu keoptimalannya dan kekurangannya yaitu konsumsi memory yang cukup tinggi, bergantung pada nilai heuristik, dan lebih kompleks dibanding UCS serta GBFS.
+
+\begin{thebibliography}{9}
+\bibitem{}
+L. Zhou and W. Li, "Adaptive artificial potential field approach for obstacle avoidance path planning," in *Proc. Seventh Int. Symp. Combinatorial Search (ISCID)*, 2015, pp. 429, IEEE.
+\bibitem{}
+Fanjaya, A. J. P. (2020). "Perbandingan algoritma A*, UCS, dan Greedy Best First Search pada pencarian solusi permainan Words of Wonders menggunakan Regex" (Undergraduate thesis, Institut Teknologi Bandung). Sekolah Teknik Elektro dan Informatika, Institut Teknologi Bandung.
+\end{thebibliography}
+
+
+\end{document}
