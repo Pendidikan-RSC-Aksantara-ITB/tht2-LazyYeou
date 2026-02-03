@@ -1,5 +1,5 @@
-from constants import *
-from utils import *
+from .constants import *
+from .utils import *
 import pygame
 import random
 
@@ -11,6 +11,8 @@ class Map:
         self.screen_h = screen_h
 
         self.obstacles = [[0 for i in range(self.grid_size)] for i in range(self.grid_size)]
+
+        self.add_obs(OBSTACLE_DENSITY)
 
     def to_grid_coord(self, px, py):
         gx = int(px // self.cell_size)
@@ -27,29 +29,31 @@ class Map:
             for y in range(self.grid_size):
                 rand = random.random()
                 if rand < density:
-                    self.obstacles[x][y] == 1
+                    self.obstacles[x][y] = 1
     
-    def in_frame_pixel(self, px, py):
+    def is_in_frame_pixel(self, px, py):
         return 0 <= px < self.screen_w and 0 <= py < self.screen_h
     
-    def in_frame_grid(self, gx, gy):
+    def is_in_frame_grid(self, gx, gy):
         return 0 <= gx < self.grid_size and 0 <= gy < self.grid_size
     
     def is_obstacle(self, px, py):
         gx, gy = self.to_grid_coord(px, py)
-        if self.in_frame_grid(gx, gy):
+        if self.is_in_frame_grid(gx, gy):
             return self.obstacles[gx][gy] == 1
         return 0
     
-    def draw(self, screen):
+    def draw(self, screen, target):
         for x in range(self.grid_size):
             for y in range(self.grid_size):
                 rect = pygame.Rect(x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size)
 
             # obs
-            if self.obstacles[x][y] == 1:
-                pygame.draw.rect(screen, BLACK, rect)
+                if self.obstacles[x][y] == 1:
+                    pygame.draw.rect(screen, BLACK, rect)
             
-            # target
+        # target
+        pygame.draw.circle(screen, GREEN, (int(target[0]), int(target[1])), self.cell_size)
+
 
         
