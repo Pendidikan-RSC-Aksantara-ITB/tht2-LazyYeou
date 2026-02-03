@@ -22,7 +22,8 @@ class Drone:
         self.target = target
         
         self.check_radius_cell = math.ceil(OBSTACLE_DISTANCE_THRESHOLD / CELL_SIZE) + 1
-        
+
+    # fungsi untuk membatasi vektor pada suati nilai 
     def limit_vector(self, vector, limit):
         magnitude = vector[0] ** 2 + vector[1] ** 2
         if magnitude > limit:
@@ -30,13 +31,14 @@ class Drone:
             return [vector[0] * f, vector[1] * f]
         return vector
     
+    # fungsi untuk menambahkan gaya 
     def apply_force(self, force):
         self.acceleration[0] += force[0]
         self.acceleration[1] += force[1]
     
+    # fungsi untuk memberi gaya tarik ke
     def to_target(self, target):
         desired_dir = [target[0] - self.position[0], target[1] - self.position[1]]
-        distance = math.sqrt(desired_dir[0] ** 2 + desired_dir[1] ** 2)
         
         desired_dir = norm_vector(desired_dir)
         desired_velocity = [dir * self.max_speed for dir in desired_dir]
@@ -45,7 +47,7 @@ class Drone:
         steer = self.limit_vector(steer, self.max_force)
         return steer 
     
-
+    # fungsi untuk memberi gaya tolak dari obstacle
     def avoid_obstacle(self, game_map : Map):
         force = [0.0, 0.0]
         obstacle_threshold = OBSTACLE_DISTANCE_THRESHOLD 
@@ -80,6 +82,7 @@ class Drone:
                             force[1] += unit_dir[1] * total_repulsion
         return force
     
+    # fungsi bergerak menuju pusat swarm
     def cohesion(self, drones):
         pos_sum = [0.0, 0.0]
         count = 0
@@ -101,6 +104,7 @@ class Drone:
             return steer
         return [0, 0]
     
+    # fungsi bergerak mengikuti arah drone lain disekitar
     def alignment(self, drones ):
         sum_vel = [0.0, 0.0]
         count = 0
@@ -121,6 +125,7 @@ class Drone:
             return steer
         return [0.0, 0.0]
 
+    # fungsi menjauh dari drone lain 
     def separation(self, drones ):
         steer = [0.0, 0.0]
         count = 0

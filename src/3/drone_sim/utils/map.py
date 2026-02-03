@@ -14,16 +14,19 @@ class Map:
 
         self.add_obs(OBSTACLE_DENSITY)
 
+    # fungsi untuk mengubah koordinat pixel ke grid
     def to_grid_coord(self, px, py):
         gx = int(px // self.cell_size)
         gy = int(py // self.cell_size)
         return gx, gy
     
+    # fungsi untuk mengubah koordinat grid ke pixel
     def to_pixel_coords(self, gx, gy):
         px = gx * self.cell_size + self.cell_size / 2
         py = gy * self.cell_size + self.cell_size / 2
         return px, py
     
+    # fungsi generator obstacle
     def add_obs(self, density):
         for x in range(self.grid_size):
             for y in range(self.grid_size):
@@ -31,17 +34,21 @@ class Map:
                 if rand < density:
                     self.obstacles[x][y] = 1
     
+    # fungsi untuk mengecek apakah koordinat pixel berada dalam window
     def is_in_frame_pixel(self, px, py):
         return 0 <= px < self.screen_w and 0 <= py < self.screen_h
     
+    # fungsi untuk mengecek apakah koordinat grid berada dalam window
     def is_in_frame_grid(self, gx, gy):
         return 0 <= gx < self.grid_size and 0 <= gy < self.grid_size
     
+    # fungsi untuk mengecek apakah koordinat pixel adalah obstacle
     def is_obstacle(self, px, py):
         gx, gy = self.to_grid_coord(px, py)
         if self.is_in_frame_grid(gx, gy):
             return self.obstacles[gx][gy] == 1
         return 0
+    
     
     def draw(self, screen, target):
         for x in range(self.grid_size):

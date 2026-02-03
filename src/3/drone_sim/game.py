@@ -20,16 +20,14 @@ def run_simulation():
         
     drones = []
 
-    # 1. SETUP DRONES
+    # setup drone
     for i in range(NUM_DRONES):
         initial_x = random.uniform(0, SCREEN_WIDTH //5)
         initial_y = random.uniform(0, SCREEN_HEIGHT // 5)
-        # Ensure we don't spawn inside an obstacle
         while game_map.is_obstacle(initial_x, initial_y):
             initial_x = random.uniform(0, SCREEN_WIDTH // 5)
             initial_y = random.uniform(0, SCREEN_HEIGHT // 5)
 
-        # FIXED: Removed target_pos (passed in update instead)
         drone = Drone(initial_x, initial_y, i, target_pos)
         drones.append(drone)
 
@@ -45,28 +43,26 @@ def run_simulation():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     simulation_active = not simulation_active
-                    # Adjust start time so the timer doesn't jump when unpausing
                     if simulation_active:
                         start_time = pygame.time.get_ticks() - int(elapsed_time_seconds * 1000)
 
-        # 2. UPDATE PHASE (Physics & Logic)
         if simulation_active:
             current_time = pygame.time.get_ticks()
             elapsed_time_seconds = (current_time - start_time) / 1000.0
             
-            # This makes the drones actually move!
             for drone in drones:
                 drone.update(drones, game_map)
 
-        # 3. DRAW PHASE (Rendering)
+
         screen.fill(GRAY)
         
+        # draw map
         game_map.draw(screen, target_pos)
         
         for drone in drones:
             drone.draw(screen) 
 
-        # UI / Metrics
+        # GUI
         font = pygame.font.Font(None, 24)
         elapsed_time_text = f"Elapsed Time: {elapsed_time_seconds:.2f} s"
         elapsed_time_surface = font.render(elapsed_time_text, True, WHITE)
