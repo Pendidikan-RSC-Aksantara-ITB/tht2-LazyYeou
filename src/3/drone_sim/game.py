@@ -10,7 +10,7 @@ from utils.map import Map
 def run_simulation():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("AMBA Drone Swarm Simulation")
+    pygame.display.set_caption("simulasi drone mas amba")
     clock = pygame.time.Clock()
 
     game_map = Map(GRID_SIZE, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -69,14 +69,14 @@ def run_simulation():
         screen.blit(elapsed_time_surface, (10, 10))
 
         if not simulation_active:
-            paused_text = font.render("PAUSED", True, YELLOW)
+            paused_text = font.render("pause", True, YELLOW)
             screen.blit(paused_text, (SCREEN_WIDTH // 2 - 50, SCREEN_HEIGHT // 2))
 
         pygame.display.flip()
         clock.tick(60) 
 
     pygame.quit()
-    print("Simulation ended.")
+    print("kelar")
 
 if __name__ == "__main__":
     run_simulation()
