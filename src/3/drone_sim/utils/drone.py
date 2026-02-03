@@ -47,12 +47,12 @@ class Drone:
     
 
     def avoid_obstacle(self, game_map : Map):
-        force = [0.0, 0.0] # We return a raw force, not a steering recommendation
+        force = [0.0, 0.0]
         obstacle_threshold = OBSTACLE_DISTANCE_THRESHOLD 
         cell_radius = self.check_radius_cell
 
-        for dy_grid in range(-cell_radius, cell_radius + 1):
-            for dx_grid in range(-cell_radius, cell_radius + 1):
+        for dx_grid in range(-cell_radius, cell_radius + 1):
+            for dy_grid in range(-cell_radius, cell_radius + 1):
                 gx = int(self.position[0] // CELL_SIZE) + dx_grid
                 gy = int(self.position[1] // CELL_SIZE) + dy_grid
 
@@ -64,7 +64,8 @@ class Drone:
                     if is_obstacle_cell:
                         dist_val = distance(self.position, (obs_px, obs_py))
                         
-                        if dist_val < 0.1: dist_val = 0.1
+                        if dist_val < 0.1:
+                            dist_val = 0.1
 
                         if dist_val < obstacle_threshold:
                             dir_vector = [self.position[0] - obs_px, self.position[1] - obs_py]
@@ -156,7 +157,7 @@ class Drone:
         self.apply_force([f * BOIDS_ALIGNMENT_WEIGHT for f in alignment_force])
         self.apply_force([f * BOIDS_SEPARATION_WEIGHT for f in separation_force])
 
-        #obstacle, fog, zone
+        #obstacle
         obstacle_force = self.avoid_obstacle(game_map)
         self.apply_force([f * ETA_WEIGHT for f in obstacle_force])
 
@@ -193,8 +194,8 @@ class Drone:
                 self.position[0] -= self.velocity[0] * 2 
                 self.position[1] -= self.velocity[1] * 2
             else: 
-                self.position[0] += random.uniform(-5, 5)
-                self.position[1] += random.uniform(-5, 5)
+                self.position[0] += random.uniform(-10, 10)
+                self.position[1] += random.uniform(-10, 10)
                 self.velocity = [v * -0.5 for v in self.velocity] 
 
     def draw(self, screen):
