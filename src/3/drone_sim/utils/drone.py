@@ -1,6 +1,6 @@
 from utils import *
 from constants import *
-from Map import *
+from map import Map
 
 import random 
 import pygame
@@ -16,6 +16,7 @@ class Drone:
         self.color = BLUE
         self.radius = 2
         self.max_speed = DRONE_MAX_SPEED
+        self.max_force = DRONE_MAX_FORCE
         
         self.check_radius_cell = math.ceil(OBSTACLE_DISTANCE_THRESHOLD / CELL_SIZE) + 1
         
@@ -26,11 +27,19 @@ class Drone:
             return [vector[0] * f, vector[1] * f]
         return vector
     
-    def to_target(self, ):
-        to_target = target
+    def to_target(self, target):
+        desired_dir = [target[0] - self.position[0], target[1] - self.position[1]]
+        distance = math.sqrt(desired_dir[0] ** 2 + desired_dir[1] ** 2)
+        
+        desired_dir = norm_vector(desired_dir)
+        desired_velocity = [dir * self.max_speed for dir in desired_dir]
+
+        steer = [desired_velocity[0] - self.velocity[0], desired_velocity[1] - self.velocity[1]]
+        steer = self.limit_vector(steer, self.max_force)
+        return steer 
     
 
-    def avoid_obstacle(self, game_map):
+    def avoid_obstacle(self, game_map : Map):
         steer = [0.0, 0.0]
         obstacle_threshold = OBSTACLE_DISTANCE_THRESHOLD
 
@@ -47,7 +56,7 @@ class Drone:
                     is_obstacle_cell = game_map.obstacles[gx][gy] == 1
 
                     # Consider both explicit obstacles and map boundaries as repulsive sources
-                    if is_obstacle_cell or not game_map.is_in_frame_pixle(obs_px, obs_py):
+                    if is_obstacle_cell or not game_map.is_in_frame_pixel(obs_px, obs_py):
                         doi = distance(self.position, (obs_px, obs_py))
 
                         if 0 < doi < obstacle_threshold:
@@ -61,7 +70,7 @@ class Drone:
                             else:
                                 unit_dir_vector = [0.0, 0.0] 
 
-                            repulsion_term = (1 / d_oi - 1 / obstacle_threshold)
+                            repulsion_term = (1 / doi - 1 / obstacle_threshold)
                             if repulsion_term < 0:
                                 repulsion_term = 0
                             
@@ -79,7 +88,7 @@ class Drone:
     
     def cohesion(self, drones):
         pos_sum = [0.0, 0.0]
-        count 0
+        count = 0
 
         for drone in drones:
             if drone != self:
@@ -94,8 +103,9 @@ class Drone:
             velocities = norm_vector(velocities)
             velocities = [v * self.max_speed for v in velocities]
             steer = [velocities[0] - self.velocity[0], velocities[1] - self.velocity[1]]
-            steer = se
-        
+            steer = self.limit_vector(velocities, self.max_force)
+            return steer
+        return [0, 0]
 
 
     def draw(self, screen):
