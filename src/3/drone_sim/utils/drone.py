@@ -1,5 +1,6 @@
 from utils import *
 from constants import *
+from Map import *
 
 import random 
 import pygame
@@ -17,13 +18,56 @@ class Drone:
         
         self.check_radius_cell = math.ceil(OBSTACLE_DISTANCE_THRESHOLD / CELL_SIZE) + 1
         
+    def to_target(self, ):
+        to_target = target
+
     def avoid_obstacle(self, game_map):
         steer = [0.0, 0.0]
         obstacle_threshold = OBSTACLE_DISTANCE_THRESHOLD
 
         cell_radius = self.check_radius_cell
+
+        for dy_grid in range(-cell_radius, cell_radius + 1):
+            for dx_grid in range(-cell_radius, cell_radius + 1):
+                gx = int(self.position[0] // CELL_SIZE) + dx_grid
+                gy = int(self.position[1] // CELL_SIZE) + dy_grid
+
+                if game_map.is_in_frame_grid(gx, gy):
+                    obs_px, obs_py = game_map.to_pixel_coords(gx, gy)
+                    
+                    is_obstacle_cell = game_map.obstacles[gx][gy] == 1
+
+                    # Consider both explicit obstacles and map boundaries as repulsive sources
+                    if is_obstacle_cell or not game_map.is_in_frame_pixle(obs_px, obs_py):
+                        doi = distance(self.position, (obs_px, obs_py))
+
+                        if 0 < doi < obstacle_threshold:
+                            eta =  ETA_WEIGHT
+                            
+                            dir_vector = [self.position[0] - obs_px, self.position[1] - obs_py]
+                            magnitude_dir = math.sqrt(dir_vector[0]**2 + dir_vector[1]**2)
+
+                            if magnitude_dir > 0:
+                                unit_dir_vector = [v / magnitude_dir for v in dir_vector]
+                            else:
+                                unit_dir_vector = [0.0, 0.0] 
+
+                            repulsion_term = (1 / d_oi - 1 / obstacle_threshold)
+                            if repulsion_term < 0:
+                                repulsion_term = 0
+                            
+                            force_magnitude = eta * (repulsion_term ** 2)
+                            
+                            steer[0] += force_magnitude * unit_dir_vector[0]
+                            steer[1] += force_magnitude * unit_dir_vector[1]
+
+        if steer[0] != 0 or steer[1] != 0:
+            steer = norm_vector(steer)
+            steer = [v * self.max_speed for v in steer]
+            steer = [v - self.velocity[i] for i, v in enumerate(steer)] #
+            steer = self._limit_vector(steer, self.max_force)
+        return steer
         
-        obs_px, obs_py = game_map._to 
 
 
     def draw(self, screen):
