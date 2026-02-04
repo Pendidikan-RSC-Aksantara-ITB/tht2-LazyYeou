@@ -13,7 +13,7 @@ import (
 
 type Waypoint struct {
 	ID        string  `json:"id" binding:"required"`
-	Name      string  `json:"string" binding:"required"`
+	Name      string  `json:"name" binding:"required"`
 	Longitude float64 `json:"longitude" binding:"required,min=-180,max=190"`
 	Latitude  float64 `json:"latitude" binding:"required,min=-90,max=190"`
 	Altitude  float64 `json:"altitude" binding:"required,min=0"`
@@ -24,7 +24,7 @@ var db *sql.DB
 func initDB() {
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
-		dbPath = "waypoints.db"
+		dbPath = "data/waypoints.db"
 	}
 
 	var err error
@@ -88,7 +88,7 @@ func saveWaypoints(ctx *gin.Context) {
 		return
 	}
 
-	stmt, err := tx.Prepare("INSERT INTO waypoints (id, name, longitude, latitude, altitude)")
+	stmt, err := tx.Prepare("INSERT INTO waypoints (id, name, longitude, latitude, altitude) VALUES (?, ?, ?, ?, ?)")
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
