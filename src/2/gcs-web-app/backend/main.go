@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -23,10 +24,11 @@ var db *sql.DB
 func initDB() {
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
-		dbPath = "/data/waypoints.db"
+		dbPath = "waypoints.db"
 	}
 
-	db, err := sql.Open("sqlite3", dbPath)
+	var err error
+	db, err = sql.Open("sqlite3", dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,10 +47,10 @@ func initDB() {
 	}
 }
 
-func getWaypoints(c *gin.Context) {
+func getWaypoints(ctx *gin.Context) {
 	rows, err := db.Query("SELECT id, name, longitude, latitude, altitude FROM waypoints")
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
 	defer rows.Close()
@@ -62,39 +64,71 @@ func getWaypoints(c *gin.Context) {
 		}
 		waypoints = append(waypoints, w)
 	}
-	c.JSON(http.StatusOK, waypoints)
+	ctx.JSON(http.StatusOK, waypoints)
 }
 
-func saveWaypoints(c *gin.Context) {
+func saveWaypoints(ctx *gin.Context) {
 	var waypoints []Waypoint
-	err := c.ShouldBindJSON(&waypoints)
+	err := ctx.ShouldBindJSON(&waypoints)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
 
 	tx, err := db.Begin()
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		ctx.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
 		return
 	}
 	defer tx.Rollback()
 
 	_, err = tx.Exec("DELETE FROM waypoints")
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"err": err.error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
 		return
 	}
+
+	stmt, err := tx.Prepare("INSERT INTO waypoints (id, name, longitude, latitude, altitude)")
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+		return
+	}
+
+	for _, w := range waypoints {
+		_, err = stmt.Exec(w.ID, w.Name, w.Longitude, w.Latitude, w.Altitude)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"err": err.Error()})
+			return
+		}
+	}
+
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"message": "waypoint dah disimpan gan", "count": len(waypoints)})
 }
 
 func main() {
-	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	initDB()
 
-	port := "8081"
+	if db != nil {
+		defer db.Close()
+	}
+
+	r := gin.Default()
+
+	config := cors.DefaultConfig()
+	config.AllowAllOrigins = true //ntar dikasi address fe-nya
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE"}
+	config.AllowHeaders = []string{"Origin", "Content-Type", "Accept"}
+	r.Use(cors.New(config))
+
+	r.GET("/api/waypoints", getWaypoints)
+	r.POST("/api/waypoints", saveWaypoints)
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8081"
+	}
+
+	log.Printf("server jalan di %s", port)
 	r.Run(":" + port)
 }
