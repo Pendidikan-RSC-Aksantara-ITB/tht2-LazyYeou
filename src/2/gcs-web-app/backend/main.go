@@ -66,7 +66,25 @@ func getWaypoints(c *gin.Context) {
 }
 
 func saveWaypoints(c *gin.Context) {
+	var waypoints []Waypoint
+	err := c.ShouldBindJSON(&waypoints)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		return
+	}
 
+	tx, err := db.Begin()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"err": err.Error()})
+		return
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec("DELETE FROM waypoints")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"err": err.error()})
+		return
+	}
 }
 
 func main() {
